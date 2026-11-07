@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CanvasBuddy + Palette — Hackathon pitch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Patrick+Hand&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,600;1,500;1,700&family=Press+Start+2P&family=Rock+Salt&family=Special+Elite&family=Rubik+Spray+Paint&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#34323D;--lav:#C9B8F0;--pink:#F6C8D6;--mint:#b8dcb9;--butter:#F8E9B1}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0b0a0e;overflow:hidden;font-family:Georgia,serif}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;background:#000}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .7s ease,transform .9s ease;transform:scale(1.025);overflow:hidden}
+.slide.on{opacity:1;pointer-events:auto;transform:none}
+.slide.past{transform:scale(.985)}
+.fill{position:absolute;inset:0;width:100%;height:100%}
+.abs{position:absolute}
+.stack{position:absolute;inset:0;display:flex;flex-direction:column;padding:110px 140px 130px}
+/* chrome (dots + page number) */
+#chrome{position:absolute;left:0;right:0;bottom:34px;display:flex;justify-content:center;gap:16px;z-index:50;pointer-events:none}
+#chrome i{width:14px;height:14px;border-radius:50%;background:var(--chrome,#fff);opacity:.28;transition:all .4s}
+#chrome i.on{opacity:.95;transform:scale(1.35)}
+/* buddy */
+.buddy .m{display:none}.buddy[data-mood=happy] .m-happy,.buddy[data-mood=cheer] .m-cheer{display:inline}
+.buddy .eye{transform-box:fill-box;transform-origin:center;animation:blink 5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-22px) rotate(2deg)}}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+.buddy .spark{animation:twinkle 2.4s infinite;transform-box:fill-box;transform-origin:center}
+
+/* ---------- 1 · WATERCOLOR cover ---------- */
+#s1{background:#f7f2ea}
+#s1 h1{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:700;font-size:176px;line-height:.95;color:#3d3552;letter-spacing:-3px}
+#s1 h1 span{color:#9b7fd6}
+#s1 .plus{font-family:'Caveat',cursive;font-size:120px;color:#e58aa6;margin-top:6px;transform:rotate(-3deg);display:block}
+#s1 .tag{font-family:'Patrick Hand','Caveat',cursive;font-size:52px;color:#4c4560;margin-top:46px;max-width:1100px;line-height:1.2}
+#s1 .chip{display:inline-block;margin-top:56px;font-family:'Courier Prime',monospace;font-size:28px;letter-spacing:3px;text-transform:uppercase;color:#6b628a;border:3px solid #6b628a;border-radius:50px;padding:14px 34px;background:rgba(255,255,255,.55)}
+#s1 .bud{position:absolute;right:70px;top:210px;width:640px;height:640px;animation:float 6s ease-in-out infinite;filter:drop-shadow(0 30px 30px rgba(120,90,180,.25))}
+#s1 .bubble{position:absolute;right:250px;top:110px;font-family:'Caveat',cursive;font-size:62px;color:#4c4560;background:#fff;border-radius:46px 46px 46px 8px;padding:20px 40px;transform:rotate(-5deg);box-shadow:0 14px 30px rgba(120,90,180,.2)}
+
+/* ---------- 2 · CHARCOAL ---------- */
+#s2{background:#1b1b1d;color:#ecebe6}
+#s2 .lines{position:absolute;left:150px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:56px;filter:url(#chalk)}
+#s2 .l{font-family:'Permanent Marker','Rock Salt',cursive;font-size:104px;line-height:1.08;max-width:1640px}
+#s2 .l.dim{font-size:84px;opacity:.62}
+#s2 .l.hot{color:#ffe9a3;font-size:138px}
+#s2 .strike{position:relative;display:inline-block}
+#s2 .strike:after{content:"";position:absolute;left:-10px;right:-10px;top:52%;height:12px;background:#ff7a66;transform:rotate(-2deg);border-radius:6px}
+
+/* ---------- 3 · PENCIL SKETCH ---------- */
+#s3{background:#efe8d6;color:#3a3a3d;font-family:'Patrick Hand','Caveat',cursive}
+#s3 h2{font-family:'Caveat',cursive;font-weight:700;font-size:130px;color:#2f2f33;transform:rotate(-1.5deg);display:inline-block}
+#s3 .row{display:flex;gap:46px;margin-top:70px;align-items:stretch}
+#s3 .step{flex:1;position:relative;padding:44px 34px 36px;filter:url(#rough)}
+#s3 .step svg.box{position:absolute;inset:0;width:100%;height:100%}
+#s3 .num{font-family:'Caveat',cursive;font-size:110px;line-height:.8;color:#8d6bd0}
+#s3 .step h3{font-size:56px;font-weight:400;margin-top:12px;color:#2b2b2f}
+#s3 .step p{font-size:38px;line-height:1.25;margin-top:16px;color:#55555c}
+#s3 .ico{height:150px;margin-top:20px}
+
+/* ---------- 4 · OIL PAINTING ---------- */
+#s4{background:#183a3d;color:#fbf3df}
+#s4 h2{font-family:'Playfair Display',serif;font-style:italic;font-weight:700;font-size:118px;color:#ffd98a;text-shadow:0 6px 0 rgba(0,0,0,.25)}
+#s4 .grid{display:grid;grid-template-columns:1fr 1fr;gap:44px;margin-top:56px}
+#s4 .card{position:relative;padding:36px 44px 38px;border-radius:14px;color:#fff6e0;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.35);display:flex;gap:34px;align-items:center}
+#s4 .card .t{flex:1}
+#s4 .card h3{font-family:'Playfair Display',serif;font-size:60px;font-weight:600}
+#s4 .card p{font-family:'Patrick Hand','Caveat',cursive;font-size:42px;line-height:1.2;margin-top:10px;opacity:.95}
+#s4 .card svg{width:170px;height:170px;flex:none}
+#s4 .c1{background:linear-gradient(135deg,#b3452f,#e0763a)}#s4 .c2{background:linear-gradient(135deg,#2a5f8f,#4aa0b0)}
+#s4 .c3{background:linear-gradient(135deg,#7a4fb0,#b88ae0)}#s4 .c4{background:linear-gradient(135deg,#a4772a,#d9a93c)}
+#s4 .impasto{position:absolute;inset:0;mix-blend-mode:multiply;opacity:.85;pointer-events:none}
+
+/* ---------- 5 · PIXEL ---------- */
+#s5{background:#14143a;color:#fff;font-family:'Press Start 2P','Courier Prime',monospace;image-rendering:pixelated}
+#s5:before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.05) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.05) 2px,transparent 2px);background-size:40px 40px}
+#s5:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 2px,transparent 2px 5px);pointer-events:none}
+#s5 h2{font-size:64px;line-height:1.3;color:#ffe45e;text-shadow:6px 6px 0 #e0457b}
+#s5 .carts{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;margin-top:70px;position:relative;z-index:2;width:1200px}
+#s5 .cart{background:#27276b;border:8px solid #fff;box-shadow:12px 12px 0 #07072a;padding:30px 26px 34px}
+#s5 .cart b{display:block;font-size:26px;line-height:1.4;color:#7ff0c8}
+#s5 .cart small{display:block;font-size:20px;line-height:1.6;margin-top:18px;color:#cfd0ff}
+#s5 .cart:nth-child(2) b{color:#ffb25e}#s5 .cart:nth-child(3) b{color:#ff8fc3}#s5 .cart:nth-child(4) b{color:#8fd0ff}#s5 .cart:nth-child(5) b{color:#e8ff8a}
+#s5 .spr{position:absolute;right:110px;top:330px;width:400px;height:400px;z-index:2;animation:hop 1.2s steps(2) infinite}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-28px)}}
+#s5 .press{position:absolute;right:130px;bottom:150px;font-size:26px;color:#ffe45e;animation:twinkle 1.2s steps(2) infinite;z-index:2}
+
+/* ---------- 6 · LINOCUT / WOODCUT ---------- */
+#s6{background:#f1e8d2;color:#17120f}
+#s6:before{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(23,18,15,.16) 3px,transparent 3.5px);background-size:22px 22px;mask-image:linear-gradient(90deg,transparent 40%,#000 100%);-webkit-mask-image:linear-gradient(90deg,transparent 40%,#000 100%)}
+#s6 h2{font-family:'Rock Salt','Permanent Marker',cursive;font-size:104px;line-height:1.1;transform:rotate(-1.5deg);display:inline-block}
+#s6 h2 em{font-style:normal;color:#d9432f}
+#s6 .cols{display:flex;gap:44px;margin-top:90px;position:relative}
+#s6 .col{flex:1;border:10px solid #17120f;background:#fff8e6;padding:34px 36px 40px;box-shadow:16px 16px 0 #17120f;position:relative}
+#s6 .col:nth-child(2){transform:rotate(1deg)}#s6 .col:nth-child(1){transform:rotate(-1deg)}#s6 .col:nth-child(3){transform:rotate(.6deg)}
+#s6 .col h3{font-family:'Special Elite','Courier Prime',monospace;font-size:54px;text-transform:uppercase;letter-spacing:1px}
+#s6 .col h3:after{content:"";display:block;height:10px;width:130px;background:#d9432f;margin:16px 0 22px}
+#s6 .col p{font-family:'Special Elite','Courier Prime',monospace;font-size:40px;line-height:1.32}
+#s6 .stamp{position:absolute;right:120px;top:90px;font-family:'Special Elite',monospace;font-size:52px;letter-spacing:4px;color:#d9432f;border:9px solid #d9432f;padding:8px 26px;border-radius:12px;transform:rotate(9deg);filter:url(#rough);opacity:.9}
+
+/* ---------- 7 · GALLERY ---------- */
+#s7{background:radial-gradient(ellipse 60% 70% at 40% 0%,#5a3d5e 0%,#2b1f30 55%,#18111c 100%);color:#f3e7d3}
+#s7 .frame{position:absolute;left:110px;top:150px;width:1230px;padding:30px;background:linear-gradient(135deg,#f4d98c,#b88a2c 45%,#f0cf7a 60%,#8d6a1f);box-shadow:0 40px 70px rgba(0,0,0,.6),inset 0 0 0 4px rgba(255,255,255,.25)}
+#s7 .mat{background:#efe6d6;padding:34px;box-shadow:inset 0 0 18px rgba(0,0,0,.35)}
+#s7 .screen{position:relative;width:100%;aspect-ratio:16/9;background:#0e0b10;overflow:hidden;box-shadow:inset 0 0 0 3px rgba(0,0,0,.6)}
+#s7 video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#0e0b10}
+#s7 .empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;font-family:'Courier Prime',monospace;color:#cbbfe0;font-size:34px;line-height:1.4;padding:60px}
+#s7 .empty b{font-size:46px;color:#ffd98a}
+#s7 .plaque{position:absolute;left:1420px;top:170px;width:400px}
+#s7 .plaque h2{font-family:'Playfair Display',serif;font-style:italic;font-size:74px;line-height:1.05;color:#ffd98a}
+#s7 .plaque p{font-family:'Patrick Hand','Caveat',cursive;font-size:38px;line-height:1.25;margin-top:22px;color:#e8dcc7}
+#s7 .ctl{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
+#s7 .ctl button{font-family:'Courier Prime',monospace;font-weight:700;font-size:30px;color:#2b1f30;background:#f4d98c;border:none;border-radius:40px;padding:12px 26px;cursor:pointer;opacity:.55}
+#s7 .ctl button.on{opacity:1;box-shadow:0 0 0 4px #fff3}
+#s7 .ctl .lbl{width:100%;font-family:'Courier Prime',monospace;font-size:22px;letter-spacing:3px;text-transform:uppercase;color:#bda9c8;margin-bottom:-4px}
+#s7 .cap{position:absolute;left:110px;bottom:105px;font-family:'Courier Prime',monospace;font-size:26px;letter-spacing:2px;color:#bda9c8}
+
+/* ---------- 8 · BLUEPRINT ---------- */
+#s8{background:#0e2f57;color:#e6f2ff;font-family:'Courier Prime',monospace}
+#s8:before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.09) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.09) 2px,transparent 2px),linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:120px 120px,120px 120px,24px 24px,24px 24px}
+#s8 h2{font-size:92px;font-weight:700;letter-spacing:-1px;position:relative}
+#s8 h2 small{display:block;font-size:30px;letter-spacing:6px;color:#8cc3ff;margin-bottom:10px;font-weight:400}
+#s8 .diag{position:absolute;left:100px;top:250px;width:1720px;height:380px}
+#s8 .facts{position:absolute;left:140px;right:140px;bottom:110px;display:flex;gap:30px}
+#s8 .f{flex:1;border:3px solid #8cc3ff;padding:20px 24px;font-size:27px;line-height:1.3;background:rgba(14,47,87,.75)}
+#s8 .f b{display:block;font-size:34px;color:#ffe45e;margin-bottom:8px}
+
+/* ---------- 9 · NEON / GRAFFITI ---------- */
+#s9{background:#17121d;color:#fff}
+#s9:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 4px,transparent 4px 78px),repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 4px,transparent 4px 190px);opacity:.9}
+#s9:after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 30% 40%,transparent 0%,rgba(10,6,14,.85) 100%)}
+#s9 .big{position:absolute;left:130px;top:150px;z-index:2;font-family:'Rubik Spray Paint','Permanent Marker',cursive;font-size:230px;line-height:.95}
+#s9 .big .a{color:#2ff3e0;text-shadow:0 0 18px #2ff3e0,0 0 60px #19b5d9}
+#s9 .big .b{color:#ff4fa3;text-shadow:0 0 18px #ff4fa3,0 0 60px #d4157a;margin-left:90px}
+#s9 .sub{position:absolute;left:140px;top:640px;z-index:2;font-family:'Patrick Hand','Caveat',cursive;font-size:56px;line-height:1.25;color:#f1e8ff;width:900px}
+#s9 .sub span{color:#ffe45e}
+#s9 .sticker{position:absolute;left:1240px;top:170px;z-index:3;background:#fff;padding:38px;border-radius:36px;transform:rotate(3deg);box-shadow:0 0 0 10px #17121d,0 0 0 16px #ffe45e,0 30px 60px rgba(0,0,0,.6)}
+#s9 canvas{display:block;width:440px;height:440px;image-rendering:pixelated}
+#s9 .hint{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#17121d;font-family:'Courier Prime',monospace;font-size:30px;line-height:1.4;padding:50px;border:6px dashed #17121d;margin:38px;border-radius:20px}
+#s9 .url{position:absolute;left:1180px;top:790px;width:600px;z-index:3;font-family:'Courier Prime',monospace;font-size:34px;text-align:center;color:#2ff3e0;text-shadow:0 0 12px #2ff3e099;word-break:break-all;cursor:pointer}
+#s9 .url small{display:block;font-size:22px;color:#b9a9d0;text-shadow:none;margin-top:8px;letter-spacing:1px}
+#s9 .edit{position:absolute;left:1120px;top:900px;z-index:4;display:none;gap:10px}
+#s9 .edit.show{display:flex}
+#s9 .edit input{width:520px;font:30px 'Courier Prime',monospace;padding:12px 18px;border-radius:12px;border:3px solid #ffe45e;background:#241a30;color:#fff}
+#s9 .edit button{font:700 28px 'Courier Prime',monospace;padding:12px 26px;border-radius:12px;border:none;background:#ffe45e;color:#17121d;cursor:pointer}
+.drip{position:absolute;z-index:2;width:12px;border-radius:0 0 8px 8px;animation:drip 5s ease-in infinite}
+@keyframes drip{0%{height:0;opacity:0}15%{opacity:1}100%{height:var(--h);opacity:.9}}
+
+/* notes overlay (press N) */
+#notes{position:fixed;left:16px;bottom:16px;max-width:560px;background:rgba(15,12,20,.92);color:#f4efe6;border:1px solid #ffffff33;border-radius:14px;padding:14px 18px;font:15px/1.45 system-ui,sans-serif;z-index:99;display:none}
+#notes.show{display:block}#notes b{color:#ffd98a}#notes .tm{float:right;font-variant-numeric:tabular-nums;color:#9fe3c8}
+#help{position:fixed;right:14px;top:12px;font:13px system-ui;color:#fff8;z-index:98;opacity:0;transition:opacity .4s}body.hint #help{opacity:1}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="chalk" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="9" result="d"/><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="9" result="g"/><feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  4 0 0 0 -1.15" result="gm"/><feComposite in="d" in2="gm" operator="in"/></filter>
+  <filter id="rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5"/></filter>
+  <filter id="wc" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.006" numOctaves="4" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="90" result="d"/><feGaussianBlur in="d" stdDeviation="3" result="b"/><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" seed="3" result="g"/><feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -.9 1.35" result="ga"/><feComposite in="b" in2="ga" operator="in"/></filter>
+  <filter id="oil" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.012 0.18" numOctaves="4" seed="5" result="t"/><feDiffuseLighting in="t" lighting-color="#fff" surfaceScale="5" diffuseConstant="1.15" result="l"><feDistantLight azimuth="235" elevation="58"/></feDiffuseLighting></filter>
+  <filter id="oilmove" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.004 0.03" numOctaves="3" seed="12" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="140"/></filter>
+  <filter id="paper" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" seed="2" result="t"/><feDiffuseLighting in="t" lighting-color="#fff" surfaceScale="1.4" diffuseConstant="1.05"><feDistantLight azimuth="45" elevation="62"/></feDiffuseLighting></filter>
+  <filter id="smudge" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="26"/></filter>
+</defs></svg>
+
+<div id="stage">
+
+<!-- 1 · WATERCOLOR -->
+<section class="slide" id="s1" data-chrome="#6b628a">
+  <svg class="fill" viewBox="0 0 1920 1080" preserveAspectRatio="none">
+    <g filter="url(#wc)" style="mix-blend-mode:multiply">
+      <path d="M-100 -60 H1000 Q1100 380 640 520 Q260 640 -100 560Z" fill="#c9b8f0" opacity=".78"/>
+      <path d="M980 -80 H2040 V500 Q1700 360 1380 470 Q1040 560 940 220Z" fill="#f6c8d6" opacity=".8"/>
+      <path d="M-120 700 Q400 560 800 760 Q1180 960 980 1200 H-120Z" fill="#b8dcb9" opacity=".8"/>
+      <path d="M1180 760 Q1500 560 2040 700 V1200 H1120Z" fill="#f8e9b1" opacity=".95"/>
+      <circle cx="1500" cy="520" r="360" fill="#c9b8f0" opacity=".5"/>
+      <circle cx="420" cy="900" r="240" fill="#f6c8d6" opacity=".55"/>
+    </g>
+    <rect width="1920" height="1080" filter="url(#paper)" style="mix-blend-mode:multiply" opacity=".55"/>
+  </svg>
+  <div class="abs" style="left:150px;top:250px">
+    <h1>Canvas<span>Buddy</span></h1>
+    <span class="plus">+ Palette</span>
+    <div class="tag">The AI art teacher that never draws for you.</div>
+    <div class="chip">CMU NOVA GenAI Hackathon · Nov 2026</div>
+  </div>
+  <div class="bubble">let’s draw!</div>
+  <div class="bud" id="coverBuddy"></div>
+</section>
+
+<!-- 2 · CHARCOAL -->
+<section class="slide" id="s2" data-chrome="#ecebe6">
+  <svg class="fill" viewBox="0 0 1920 1080">
+    <g filter="url(#smudge)"><ellipse cx="300" cy="200" rx="420" ry="190" fill="#3a3a3d" opacity=".7"/><ellipse cx="1650" cy="900" rx="520" ry="260" fill="#2c2c2f" opacity=".9"/><ellipse cx="1500" cy="150" rx="380" ry="150" fill="#333336" opacity=".6"/></g>
+    <rect width="1920" height="1080" filter="url(#paper)" style="mix-blend-mode:overlay" opacity=".45"/>
+    <g filter="url(#chalk)" fill="none" stroke="#ecebe6" stroke-width="7" stroke-linecap="round" opacity=".5"><path d="M1640 110 q60 -50 120 0 q50 50 0 100 q-50 40 -110 0"/><path d="M1620 930 l120 -40 m-120 40 l30 -120 m90 80 l-110 -70"/></g>
+  </svg>
+  <div class="lines">
+    <div class="l">AI art tools make the picture <span style="white-space:nowrap"><span class="strike">for you</span>.</span></div>
+    <div class="l dim">So nobody learns to draw.</div>
+    <div class="l hot">CanvasBuddy teaches the hand.</div>
+  </div>
+</section>
+
+<!-- 3 · PENCIL SKETCH -->
+<section class="slide" id="s3" data-chrome="#3a3a3d">
+  <svg class="fill" viewBox="0 0 1920 1080"><rect width="1920" height="1080" filter="url(#paper)" style="mix-blend-mode:multiply" opacity=".5"/>
+    <g stroke="#b9ae92" stroke-width="2" opacity=".55"><path d="M0 220H1920M0 300H1920M0 380H1920M0 460H1920M0 540H1920M0 620H1920M0 700H1920M0 780H1920M0 860H1920M0 940H1920M0 1020H1920"/></g>
+    <path d="M150 0V1080" stroke="#e58a8a" stroke-width="3" opacity=".6"/></svg>
+  <div class="stack" style="padding-left:190px">
+    <h2>how it works</h2>
+    <div class="row">
+      <div class="step"><svg class="box" viewBox="0 0 400 560" preserveAspectRatio="none"><path d="M10 14 Q200 4 392 12 Q398 280 390 548 Q200 556 8 546 Q2 280 10 14Z" fill="#faf5e6" stroke="#3a3a3d" stroke-width="4"/></svg>
+        <div style="position:relative"><div class="num">1</div><h3>Pick a picture</h3><p>Upload any reference. Or grab a sample.</p>
+        <svg class="ico" viewBox="0 0 200 150" fill="none" stroke="#3a3a3d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><rect x="20" y="20" width="160" height="110" rx="8"/><circle cx="62" cy="55" r="14"/><path d="M24 118 L80 70 L112 100 L138 78 L176 114"/></svg></div></div>
+      <div class="step"><svg class="box" viewBox="0 0 400 560" preserveAspectRatio="none"><path d="M12 10 Q200 18 390 8 Q396 280 388 550 Q200 542 10 552 Q4 280 12 10Z" fill="#faf5e6" stroke="#3a3a3d" stroke-width="4"/></svg>
+        <div style="position:relative"><div class="num">2</div><h3>Buddy plans it</h3><p>Gemini studies it and writes a 5–9 step lesson.</p>
+        <svg class="ico" viewBox="0 0 200 150" fill="none" stroke="#3a3a3d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M100 14 L116 56 L160 60 L126 88 L138 132 L100 108 L62 132 L74 88 L40 60 L84 56Z" stroke="#8d6bd0"/></svg></div></div>
+      <div class="step"><svg class="box" viewBox="0 0 400 560" preserveAspectRatio="none"><path d="M8 12 Q200 6 392 14 Q394 280 392 546 Q200 552 12 548 Q6 280 8 12Z" fill="#faf5e6" stroke="#3a3a3d" stroke-width="4"/></svg>
+        <div style="position:relative"><div class="num">3</div><h3>You draw</h3><p>Markers show exactly where each thing goes.</p>
+        <svg class="ico" viewBox="0 0 200 150" fill="none" stroke="#3a3a3d" stroke-width="5" stroke-linecap="round"><ellipse cx="70" cy="70" rx="44" ry="34" stroke-dasharray="4 12" stroke="#8d6bd0"/><path d="M110 120 L180 40 l14 10 L124 132Z"/><path d="M110 120 l-4 18 l18 -6"/></svg></div></div>
+      <div class="step"><svg class="box" viewBox="0 0 400 560" preserveAspectRatio="none"><path d="M14 8 Q200 14 388 12 Q396 280 386 552 Q200 546 6 550 Q8 280 14 8Z" fill="#faf5e6" stroke="#3a3a3d" stroke-width="4"/></svg>
+        <div style="position:relative"><div class="num">4</div><h3>Check &amp; grow</h3><p>Honest feedback, one tip at a time.</p>
+        <svg class="ico" viewBox="0 0 200 150" fill="none" stroke="#3a3a3d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><circle cx="100" cy="75" r="56"/><path d="M68 76 L92 100 L138 50" stroke="#4ea36b" stroke-width="9"/></svg></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · OIL PAINTING -->
+<section class="slide" id="s4" data-chrome="#ffd98a">
+  <svg class="fill" viewBox="0 0 1920 1080" preserveAspectRatio="none">
+    <g filter="url(#oilmove)"><rect x="-200" y="-200" width="2400" height="700" fill="#1f5a5e"/><rect x="-200" y="450" width="2400" height="400" fill="#163c4a"/><rect x="-200" y="800" width="2400" height="500" fill="#3a2a48"/><ellipse cx="1650" cy="160" rx="380" ry="190" fill="#e0993a" opacity=".75"/><ellipse cx="260" cy="980" rx="460" ry="190" fill="#b3452f" opacity=".55"/></g>
+    <rect width="1920" height="1080" filter="url(#oil)" style="mix-blend-mode:multiply" opacity=".75"/>
+  </svg>
+  <div class="stack">
+    <h2>what you’ll see</h2>
+    <div class="grid">
+      <div class="card c1"><svg viewBox="0 0 170 170" fill="none" stroke="#fff6e0" stroke-width="7" stroke-linecap="round"><ellipse cx="85" cy="85" rx="64" ry="46" stroke-dasharray="3 15"/><rect x="40" y="52" width="50" height="40" rx="6" stroke-dasharray="3 15" transform="rotate(-12 65 72)"/><path d="M100 110 l36 36 M136 110 l-36 36" stroke-width="0"/><circle cx="118" cy="104" r="9" fill="#fff6e0" stroke="none"/></svg><div class="t"><h3>Markers on canvas</h3><p>Plain shapes show where each part goes. No clutter.</p></div></div>
+      <div class="card c2"><svg viewBox="0 0 170 170"><rect x="14" y="30" width="34" height="110" fill="#f3ead2" rx="4"/><rect x="54" y="30" width="34" height="110" fill="#9aa59a" rx="4"/><rect x="94" y="30" width="34" height="110" fill="#4a5656" rx="4"/><rect x="134" y="30" width="22" height="110" fill="#1b2222" rx="4"/></svg><div class="t"><h3>Palette</h3><p>Colours, values and masses pulled from your reference.</p></div></div>
+      <div class="card c3"><svg viewBox="0 0 170 170"><path d="M20 30 H150 Q160 30 160 40 V100 Q160 110 150 110 H80 L44 140 L50 110 H20 Q10 110 10 100 V40 Q10 30 20 30Z" fill="#fff6e0"/><circle cx="55" cy="70" r="9" fill="#34323D"/><circle cx="85" cy="70" r="9" fill="#34323D"/><circle cx="115" cy="70" r="9" fill="#34323D"/></svg><div class="t"><h3>Buddy</h3><p>Short, kind tips. Quiet mode when you want to focus.</p></div></div>
+      <div class="card c4"><svg viewBox="0 0 170 170" fill="none" stroke="#fff6e0" stroke-width="14" stroke-linecap="round"><circle cx="85" cy="85" r="60" stroke-opacity=".3"/><path d="M85 25 A60 60 0 1 1 30 108" /><path d="M64 88 l16 18 l34 -38" stroke-width="12"/></svg><div class="t"><h3>Check my progress</h3><p>Compares your drawing to the reference with real measurements.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · PIXEL -->
+<section class="slide" id="s5" data-chrome="#ffe45e">
+  <div class="stack" style="z-index:2">
+    <h2>PICK YOUR<br>MODE</h2>
+    <div class="carts">
+      <div class="cart"><b>SKETCH</b><small>shapes → lines</small></div>
+      <div class="cart"><b>PAINT</b><small>values → colour</small></div>
+      <div class="cart"><b>SKETCH → PAINT</b><small>draw it, then paint it</small></div>
+      <div class="cart"><b>STYLE STUDY</b><small>learn a look</small></div>
+      <div class="cart"><b>FREE PRACTICE</b><small>no guides</small></div>
+    </div>
+  </div>
+  <canvas class="spr" id="pixBuddy" width="16" height="16"></canvas>
+  <div class="press">▶ PRESS START</div>
+</section>
+
+<!-- 6 · LINOCUT -->
+<section class="slide" id="s6" data-chrome="#17120f">
+  <div class="stack">
+    <h2>Trust, <em>checked.</em></h2>
+    <div class="cols">
+      <div class="col"><h3>Audit Agent</h3><p>Checks every marker against the real pixels. Fixes near-misses. Flags the rest.</p></div>
+      <div class="col"><h3>Shield</h3><p>50+ attack tests. Hidden instructions stripped. Your API key never leaves the server.</p></div>
+      <div class="col"><h3>Perfect Artist</h3><p>A simulated beginner follows every step, to prove a lesson really works.</p></div>
+    </div>
+  </div>
+  <div class="stamp">TESTED</div>
+</section>
+
+<!-- 7 · GALLERY -->
+<section class="slide" id="s7" data-chrome="#f3e7d3">
+  <div class="frame"><div class="mat"><div class="screen">
+    <video id="vid" muted playsinline loop preload="auto"></video>
+    <div class="empty" id="vidEmpty"><b>Drop your clips next to this file</b>speedart.mp4 &nbsp;·&nbsp; session.mp4<br>(run make-video.sh on your recording)</div>
+  </div></div></div>
+  <div class="plaque">
+    <h2>A skull, start to finish</h2>
+    <p>One reference. Twenty minutes. Drawn by hand, guided by Buddy.</p>
+    <div class="ctl">
+      <div class="lbl">clip</div>
+      <button id="bSpeed" class="on">⏩ speed art</button><button id="bFull">🎞 full session</button>
+      <div class="lbl" style="margin-top:14px">speed</div>
+      <button data-r="1" class="on">1×</button><button data-r="4">4×</button><button data-r="16">16×</button>
+    </div>
+  </div>
+  <div class="cap">HANG IN THE GALLERY · CANVASBUDDY, 2026</div>
+</section>
+
+<!-- 8 · BLUEPRINT -->
+<section class="slide" id="s8" data-chrome="#8cc3ff">
+  <div class="stack"><h2><small>UNDER THE HOOD</small>Small, fast, yours.</h2></div>
+  <svg class="diag" viewBox="0 0 1720 380" fill="none" stroke="#e6f2ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <g font-family="Courier Prime, monospace" fill="#e6f2ff" stroke="none" font-size="40" text-anchor="middle">
+      <text x="260" y="196">iPad / browser</text><text x="860" y="196">Node server</text><text x="1460" y="196">Gemini</text>
+      <text x="260" y="244" font-size="26" fill="#8cc3ff">canvas · guides · Buddy</text><text x="860" y="244" font-size="26" fill="#8cc3ff">holds the key</text><text x="1460" y="244" font-size="26" fill="#8cc3ff">via OpenRouter</text></g>
+    <rect x="30" y="90" width="460" height="200" rx="14"/><rect x="630" y="90" width="460" height="200" rx="14"/><rect x="1230" y="90" width="460" height="200" rx="14"/>
+    <path d="M490 190 H630 M600 170 L630 190 L600 210"/><path d="M1090 190 H1230 M1200 170 L1230 190 L1200 210"/>
+    <path d="M630 150 H490 M520 130 L490 150 L520 170" stroke-dasharray="4 12"/><path d="M1230 150 H1090 M1120 130 L1090 150 L1120 170" stroke-dasharray="4 12"/>
+  </svg>
+  <div class="facts">
+    <div class="f"><b>Gemini, all the way</b>Plans lessons, critiques drawings, writes tips, guards inputs.</div>
+    <div class="f"><b>0 dependencies</b>Plain Node + vanilla JS. Nothing to install.</div>
+    <div class="f"><b>iPad-ready</b>Touch canvas, layers, ten brushes.</div>
+    <div class="f"><b>Demo-proof</b>Offline mode if the network or the key fails.</div>
+  </div>
+</section>
+
+<!-- 9 · NEON / GRAFFITI -->
+<section class="slide" id="s9" data-chrome="#2ff3e0">
+  <div class="big"><div class="a">SCAN.</div><div class="b">DRAW.</div></div>
+  <div class="sub">Join my Wi-Fi, scan the code, and <span>try it yourself</span>. Pick a sample or bring your own reference.</div>
+  <div class="sticker"><canvas id="qr" width="440" height="440"></canvas><div class="hint" id="qrHint">Press E and paste<br>your Wi-Fi link<br>(http://192.168…:3000)</div></div>
+  <div class="url" id="urlShow"><span id="urlText">press E to set the link</span><small>same Wi-Fi as me · press E to edit</small></div>
+  <div class="edit" id="edit"><input id="urlIn" placeholder="http://192.168.1.23:3000" spellcheck="false"><button id="urlGo">Make QR</button></div>
+</section>
+
+<div id="chrome"></div>
+</div>
+
+<div id="notes"></div><div id="help">← → move · F fullscreen · N notes · E edit QR link</div>
+
+<script>
+/* Tiny QR encoder: byte mode, error correction M, versions 1–10 (up to ~210 characters). Returns {size, get(x,y)}. */
+function makeQR(text) {
+  const data = Array.from(new TextEncoder().encode(text));
+  const ECC = [0, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26], BLK = [0, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5];
+  const raw = (v) => { let r = (16 * v + 128) * v + 64; if (v >= 2) { const n = Math.floor(v / 7) + 2; r -= (25 * n - 10) * n - 55; if (v >= 7) r -= 36; } return r; };
+  let ver = 0;
+  for (let v = 1; v <= 10; v++) { const cap = Math.floor(raw(v) / 8) - ECC[v] * BLK[v]; if (4 + (v <= 9 ? 8 : 16) + 8 * data.length <= cap * 8) { ver = v; break; } }
+  if (!ver) throw new Error('That link is too long for the QR code');
+  const size = ver * 4 + 17, dataCw = Math.floor(raw(ver) / 8) - ECC[ver] * BLK[ver];
+  const bits = []; const put = (val, n) => { for (let i = n - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+  put(4, 4); put(data.length, ver <= 9 ? 8 : 16); data.forEach((b) => put(b, 8));
+  put(0, Math.min(4, dataCw * 8 - bits.length)); while (bits.length % 8) bits.push(0);
+  for (let pad = 0xEC; bits.length < dataCw * 8; pad ^= 0xEC ^ 0x11) put(pad, 8);
+  const cw = []; for (let i = 0; i < bits.length; i += 8) cw.push(parseInt(bits.slice(i, i + 8).join(''), 2));
+  const mul = (x, y) => { let z = 0; for (let i = 7; i >= 0; i--) { z = (z << 1) ^ ((z >>> 7) * 0x11D); z ^= ((y >>> i) & 1) * x; } return z; };
+  const divisor = (deg) => { const r = new Array(deg).fill(0); r[deg - 1] = 1; let root = 1; for (let i = 0; i < deg; i++) { for (let j = 0; j < deg; j++) { r[j] = mul(r[j], root); if (j + 1 < deg) r[j] ^= r[j + 1]; } root = mul(root, 2); } return r; };
+  const remainder = (d, div) => { const r = new Array(div.length).fill(0); for (const b of d) { const f = b ^ r.shift(); r.push(0); div.forEach((c, i) => { r[i] ^= mul(c, f); }); } return r; };
+  const nb = BLK[ver], eccLen = ECC[ver], rawCw = Math.floor(raw(ver) / 8), nShort = nb - (rawCw % nb), shortLen = Math.floor(rawCw / nb), div = divisor(eccLen), blocks = [];
+  for (let i = 0, k = 0; i < nb; i++) { const dat = cw.slice(k, k + shortLen - eccLen + (i < nShort ? 0 : 1)); k += dat.length; const ecc = remainder(dat, div); if (i < nShort) dat.push(0); blocks.push(dat.concat(ecc)); }
+  const all = []; for (let i = 0; i < blocks[0].length; i++) blocks.forEach((b, j) => { if (i !== shortLen - eccLen || j >= nShort) all.push(b[i]); });
+  const m = Array.from({ length: size }, () => new Array(size).fill(false)), fn = Array.from({ length: size }, () => new Array(size).fill(false));
+  const set = (x, y, c) => { m[y][x] = c; fn[y][x] = true; };
+  for (let i = 0; i < size; i++) { set(6, i, i % 2 === 0); set(i, 6, i % 2 === 0); }
+  for (const [cx, cy] of [[3, 3], [size - 4, 3], [3, size - 4]]) for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) { const x = cx + dx, y = cy + dy; if (x >= 0 && x < size && y >= 0 && y < size) set(x, y, Math.max(Math.abs(dx), Math.abs(dy)) !== 2 && Math.max(Math.abs(dx), Math.abs(dy)) !== 4); }
+  const pos = []; if (ver > 1) { const n = Math.floor(ver / 7) + 2, step = Math.ceil((ver * 4 + 4) / (n * 2 - 2)) * 2; for (let p = size - 7; pos.length < n - 1; p -= step) pos.unshift(p); pos.unshift(6); }
+  pos.forEach((px, i) => pos.forEach((py, j) => { if ((i === 0 && j === 0) || (i === 0 && j === pos.length - 1) || (i === pos.length - 1 && j === 0)) return; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) set(px + dx, py + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1); }));
+  const fmt = (mask) => { const d = (0 << 3) | mask; let r = d; for (let i = 0; i < 10; i++) r = (r << 1) ^ ((r >>> 9) * 0x537); const b = ((d << 10) | r) ^ 0x5412, g = (i) => ((b >>> i) & 1) !== 0;
+    for (let i = 0; i <= 5; i++) set(8, i, g(i)); set(8, 7, g(6)); set(8, 8, g(7)); set(7, 8, g(8)); for (let i = 9; i < 15; i++) set(14 - i, 8, g(i));
+    for (let i = 0; i < 8; i++) set(size - 1 - i, 8, g(i)); for (let i = 8; i < 15; i++) set(8, size - 15 + i, g(i)); set(8, size - 8, true); };
+  fmt(0);
+  if (ver >= 7) { let r = ver; for (let i = 0; i < 12; i++) r = (r << 1) ^ ((r >>> 11) * 0x1F25); const b = (ver << 12) | r; for (let i = 0; i < 18; i++) { const c = ((b >>> i) & 1) !== 0, a = size - 11 + (i % 3), q = Math.floor(i / 3); set(a, q, c); set(q, a, c); } }
+  let bi = 0; for (let right = size - 1; right >= 1; right -= 2) { if (right === 6) right = 5; for (let vert = 0; vert < size; vert++) for (let j = 0; j < 2; j++) { const x = right - j, up = ((right + 1) & 2) === 0, y = up ? size - 1 - vert : vert; if (!fn[y][x] && bi < all.length * 8) { m[y][x] = ((all[bi >>> 3] >>> (7 - (bi & 7))) & 1) !== 0; bi++; } } }
+  const maskFn = [(x, y) => (x + y) % 2 === 0, (x, y) => y % 2 === 0, (x) => x % 3 === 0, (x, y) => (x + y) % 3 === 0, (x, y) => (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0, (x, y) => ((x * y) % 2) + ((x * y) % 3) === 0, (x, y) => (((x * y) % 2) + ((x * y) % 3)) % 2 === 0, (x, y) => (((x + y) % 2) + ((x * y) % 3)) % 2 === 0];
+  const apply = (k) => { for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (!fn[y][x] && maskFn[k](x, y)) m[y][x] = !m[y][x]; };
+  const penalty = () => { let p = 0, dark = 0;
+    for (let a = 0; a < size; a++) for (const row of [true, false]) { let run = 1; for (let b = 1; b < size; b++) { const c = row ? m[a][b] === m[a][b - 1] : m[b][a] === m[b - 1][a]; if (c) { run++; if (run === 5) p += 3; else if (run > 5) p++; } else run = 1; } }
+    for (let y = 0; y < size - 1; y++) for (let x = 0; x < size - 1; x++) { const c = m[y][x]; if (c === m[y][x + 1] && c === m[y + 1][x] && c === m[y + 1][x + 1]) p += 3; }
+    for (const r of m) for (const c of r) if (c) dark++;
+    return p + (Math.ceil(Math.abs(dark * 20 - size * size * 10) / (size * size)) - 1) * 10; };
+  let best = 0, bestP = Infinity; for (let k = 0; k < 8; k++) { apply(k); fmt(k); const p = penalty(); if (p < bestP) { bestP = p; best = k; } apply(k); }
+  apply(best); fmt(best);
+  return { size, version: ver, get: (x, y) => x >= 0 && y >= 0 && x < size && y < size && m[y][x] };
+}
+
+
+</script>
+<script>
+const NOTES = [
+ ['Cover · ~15s','Hi — this is CanvasBuddy + Palette. It’s an AI art teacher that teaches you to draw. It never draws for you.'],
+ ['The problem · ~30s','Most AI art tools hand you a finished picture. You get the output, but you learn nothing. We flipped it: the AI plans the lesson, you hold the pencil.'],
+ ['How it works · ~40s','Four steps. Pick a reference. Gemini studies it and writes a 5–9 step lesson. You draw, with markers on your canvas showing where each part goes. Then Buddy checks your drawing and gives one tip at a time.'],
+ ['What you’ll see · ~50s','Plain shape markers — no numbers, no clutter. The Palette pulls colours, values and masses from your reference. Buddy keeps tips short and kind. “Check my progress” compares your drawing to the reference using real measurements, not vibes.'],
+ ['Modes · ~25s','Five ways to learn: sketch, paint, sketch-then-paint, study a style, or free practice with no guides.'],
+ ['Trust · ~35s','AI lessons can be wrong, so every marker is audited against the real pixels. The Shield blocks prompt-injection and strips hidden image data, and the API key never leaves the server. Perfect Artist simulates a beginner following every step to prove a lesson works.'],
+ ['Demo video · ~60s','Here’s me using it for twenty minutes to draw a skull from a reference. Speed art first — then slow it down if someone wants to see a step.'],
+ ['Under the hood · ~25s','Plain Node and vanilla JS, no dependencies. Gemini does all the AI work. It runs on an iPad, and if the network or key fails, it falls back to an offline mode so the demo still works.'],
+ ['Try it · ~20s','Join my Wi-Fi, scan the code, and try it. Pick a sample or bring your own reference. Thank you!']
+];
+const stage=document.getElementById('stage'),slides=[...document.querySelectorAll('.slide')],chrome=document.getElementById('chrome');
+let cur=0,t0=0;
+slides.forEach(()=>chrome.appendChild(document.createElement('i')));
+function fit2(){const s=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform=`translate(${(innerWidth-1920*s)/2}px,${(innerHeight-1080*s)/2}px) scale(${s})`;stage.style.left='0';stage.style.top='0';}
+addEventListener('resize',fit2);fit2();
+function show(n,quiet){n=Math.max(0,Math.min(slides.length-1,n));
+  slides.forEach((s,i)=>{s.classList.toggle('on',i===n);s.classList.toggle('past',i<n)});
+  [...chrome.children].forEach((d,i)=>d.classList.toggle('on',i===n));
+  chrome.style.setProperty('--chrome',slides[n].dataset.chrome||'#fff');
+  cur=n;
+  if(n>0&&!t0)t0=Date.now();
+  renderNotes();onSlide(n);}
+function renderNotes(){const [h,t]=NOTES[cur];const e=t0?Math.floor((Date.now()-t0)/1000):0;document.getElementById('notes').innerHTML=`<span class="tm">${Math.floor(e/60)}:${String(e%60).padStart(2,'0')} / 5:00</span><b>${cur+1}. ${h}</b><br>${t}`;}
+setInterval(()=>{if(document.getElementById('notes').classList.contains('show'))renderNotes()},1000);
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'){if(e.key==='Enter')document.getElementById('urlGo').click();if(e.key==='Escape')closeEdit();return;}
+  const k=e.key;
+  if(['ArrowRight','PageDown',' ','Enter'].includes(k)){e.preventDefault();show(cur+1)}
+  else if(['ArrowLeft','PageUp','Backspace'].includes(k)){e.preventDefault();show(cur-1)}
+  else if(k==='Home')show(0);else if(k==='End')show(slides.length-1);
+  else if(/^[1-9]$/.test(k))show(+k-1);
+  else if(k==='f'||k==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+  else if(k==='n'||k==='N'){document.getElementById('notes').classList.toggle('show');renderNotes()}
+  else if(k==='e'||k==='E'){show(8);openEdit();e.preventDefault()}
+});
+let sx=0;addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-sx;if(Math.abs(d)>60)show(cur+(d<0?1:-1))});
+addEventListener('click',e=>{if(e.target.closest('button,input,#urlShow,.edit'))return;const x=e.clientX/innerWidth;show(cur+(x<.25?-1:1))});
+document.body.classList.add('hint');setTimeout(()=>document.body.classList.remove('hint'),5000);
+
+/* Buddy (same art as the app) */
+const BUDDY=`<svg viewBox="0 0 120 120" data-mood="cheer" class="buddy" role="img" aria-label="Buddy">
+<ellipse cx="60" cy="110" rx="30" ry="5" fill="rgba(52,50,61,.12)"/><g class="body">
+<path d="M60 14C86 14 104 34 104 62C104 90 86 104 60 104C34 104 16 90 16 62C16 34 34 14 60 14Z" fill="#C9B8F0"/>
+<path d="M30 40C36 26 50 20 62 20" stroke="#fff" stroke-opacity=".5" stroke-width="5" stroke-linecap="round" fill="none"/>
+<path d="M60 15C58 5 50 2 45 6C52 6 56 9 60 15Z" fill="#9fcba0"/><path d="M60 15C62 6 70 3 75 8C68 8 64 10 60 15Z" fill="#b8dcb9"/>
+<ellipse cx="33" cy="70" rx="8" ry="5" fill="#F6C8D6"/><ellipse cx="87" cy="70" rx="8" ry="5" fill="#F6C8D6"/>
+<g class="eye"><ellipse cx="44" cy="58" rx="6" ry="7.5" fill="#34323D"/><circle cx="46" cy="55" r="2.2" fill="#fff"/></g>
+<g class="eye"><ellipse cx="76" cy="58" rx="6" ry="7.5" fill="#34323D"/><circle cx="78" cy="55" r="2.2" fill="#fff"/></g>
+<path class="m m-cheer" d="M48 72Q60 94 72 72Z" fill="#34323D"/><path class="m m-cheer" d="M54 82Q60 78 66 82Q60 88 54 82Z" fill="#F6C8D6"/>
+<g transform="rotate(24 100 86)"><rect x="96" y="66" width="7" height="34" rx="3.5" fill="#F8E9B1" stroke="#e5cf7d"/><path d="M96 66h7l-3.5-12z" fill="#F6C8D6"/></g>
+<g class="spark" fill="#F8E9B1" stroke="#e0c35a"><path d="M14 30l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><path d="M104 18l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></g>
+</g></svg>`;
+document.getElementById('coverBuddy').innerHTML=BUDDY;
+
+/* pixel Buddy sprite */
+(function(){const map=['.......GG.......','......GG.GG.....','.....LLLLLL.....','...LLLLLLLLLL...','..LLWWLLLLLLLL..','..LLWLLLLLLLLL..','.LLLLLLLLLLLLLL.','.LLLDDLLLLDDLLL.','.LLLDDLLLLDDLLL.','.LPPLLLLLLLLPPL.','.LLLLLDLLDLLLLL.','.LLLLLLDDLLLLLL.','..LLLLLLLLLLLL..','...LLLLLLLLLL...','.....LLLLLL.....','................'];
+ const col={L:'#C9B8F0',D:'#34323D',P:'#F6C8D6',G:'#9fcba0',W:'#ffffff'};const c=document.getElementById('pixBuddy'),x=c.getContext('2d');
+ map.forEach((r,y)=>[...r].forEach((ch,i)=>{if(col[ch]){x.fillStyle=col[ch];x.fillRect(i,y,1,1)}}));c.style.imageRendering='pixelated';})();
+
+/* video gallery */
+const vid=document.getElementById('vid'),empty=document.getElementById('vidEmpty'),bS=document.getElementById('bSpeed'),bF=document.getElementById('bFull');
+let clip='speed',rate=1;
+function setRate(r){rate=r;document.querySelectorAll('#s7 [data-r]').forEach(b=>b.classList.toggle('on',+b.dataset.r===r));vid.playbackRate=r}
+function loadClip(k,fallback){clip=k;bS.classList.toggle('on',k==='speed');bF.classList.toggle('on',k==='full');
+  vid.onerror=()=>{if(!fallback)loadClip(k==='speed'?'full':'speed',true);else{vid.removeAttribute('src');empty.style.display='flex'}};
+  vid.onloadeddata=()=>{empty.style.display='none';setRate(k==='full'&&!fallback&&rate===1?rate:rate);if(slides[cur].id==='s7')vid.play().catch(()=>{})};
+  vid.src=k==='speed'?'speedart.mp4':'session.mp4';vid.load();}
+bS.onclick=()=>{setRate(1);loadClip('speed',false)};bF.onclick=()=>{setRate(4);loadClip('full',false)};
+document.querySelectorAll('#s7 [data-r]').forEach(b=>b.onclick=()=>setRate(+b.dataset.r));
+loadClip('speed',false);
+function onSlide(n){if(slides[n].id==='s7'){vid.play().catch(()=>{})}else vid.pause();}
+
+/* QR */
+const qrCv=document.getElementById('qr'),qrHint=document.getElementById('qrHint'),urlText=document.getElementById('urlText'),edit=document.getElementById('edit'),urlIn=document.getElementById('urlIn');
+function drawQR(u){const g=qrCv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,440,440);
+  try{const q=makeQR(u),n=q.size+4,px=Math.floor(440/n),off=Math.floor((440-px*n)/2)+2*px;g.fillStyle='#17121d';
+    for(let y=0;y<q.size;y++)for(let x=0;x<q.size;x++)if(q.get(x,y))g.fillRect(off+x*px,off+y*px,px,px);qrHint.style.display='none';urlText.textContent=u.replace(/^https?:\/\//,'')}
+  catch(err){qrHint.style.display='flex';qrHint.textContent=err.message}}
+function setURL(u){u=(u||'').trim();if(!u)return;if(!/^https?:\/\//i.test(u))u='http://'+u;try{localStorage.setItem('cbUrl',u)}catch(e){}drawQR(u)}
+function openEdit(){edit.classList.add('show');urlIn.value=localStorage.getItem('cbUrl')||'http://';setTimeout(()=>{urlIn.focus();urlIn.select()},50)}
+function closeEdit(){edit.classList.remove('show');urlIn.blur()}
+document.getElementById('urlGo').onclick=()=>{setURL(urlIn.value);closeEdit()};
+document.getElementById('urlShow').onclick=openEdit;
+(function(){const m=location.hash.match(/url=([^&]+)/);let u=m?decodeURIComponent(m[1]):null;if(!u){try{u=localStorage.getItem('cbUrl')}catch(e){}}if(u)setURL(u);})();
+const hm=location.hash.match(/slide=(\d+)/);show(hm?+hm[1]-1:0);
+</script>
+</body>
+</html>
